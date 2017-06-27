@@ -8,9 +8,32 @@
     </div>
 </nav>
 <div class="container">
-    <h4>{{ (user | async)?.displayName }} </h4>
-    <div *ngIf="admin" class="card-panel">
-        <h5>Admin</h5>
-        
+    <div class="row">
+        <div class="col s8">
+            <h4>{{ (user | async)?.displayName }} </h4>
+            <div *ngIf="admin" class="card-panel">
+                <h5>Admin</h5>
+                <button (click)="pauseB()" *ngIf="pause == false" class="waves-effect waves-light btn red">Pausar</button>
+                <button (click)="pauseB()" *ngIf="pause == true" class="waves-effect waves-light btn green">Reanudar</button>
+                <div>
+                    <br/>
+                    <a (click)="start()" class="waves-effect waves-light btn indigo">Iniciar</a>
+                </div>
+                <div>
+
+                </div>
+            </div>
+            <div class="card-panel" [ngClass]="{'indigo accent-1': this.cycle==3}">
+                <h5 *ngIf="this.cycle==3">Ultimo ciclo</h5>
+                <h5>Ciclo: {{ cycle+1 }} | <span *ngIf="!this.state">Descanso</span><span *ngIf="this.state">Trabajo</span></h5>
+                <h5>Minutos: {{ min }}:{{ seg }}</h5>
+            </div>
+        </div>
+        <div class="col s4">
+            <h5>Usuarios</h5>
+            <div class="collection">
+                <a href="#!" class="collection-item" *ngFor="let item of usersOnline | async">{{ item.name }}</a>
+            </div>
+        </div>
     </div>
 </div>
