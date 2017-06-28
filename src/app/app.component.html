@@ -13,11 +13,12 @@
             <h4>{{ (user | async)?.displayName }} </h4>
             <div *ngIf="admin" class="card-panel">
                 <h5>Admin</h5>
-                <button (click)="pauseB()" *ngIf="pause == false" class="waves-effect waves-light btn red">Pausar</button>
-                <button (click)="pauseB()" *ngIf="pause == true" class="waves-effect waves-light btn green">Reanudar</button>
+                <button (click)="pauseB()" *ngIf="pause == false" class="waves-effect waves-light btn amber">Pausar</button>
+                <button (click)="pauseB()" *ngIf="pause == true" class="waves-effect waves-light btn light-blue accent-2">Reanudar</button>
                 <div>
                     <br/>
-                    <a (click)="start()" class="waves-effect waves-light btn indigo">Iniciar</a>
+                    <a *ngIf="ini == false" (click)="start()" class="waves-effect waves-light btn indigo">Iniciar</a>
+                    <a *ngIf="ini == true" (click)="stop()" class="waves-effect waves-light btn red">Stop</a>
                 </div>
                 <div>
 

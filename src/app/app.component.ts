@@ -4,9 +4,9 @@ import 'rxjs/add/operator/take'
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 import { AngularFireDatabase, FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
-import { PushNotificationComponent } from 'ng2-notifications/ng2-notifications';
 
-//@Directive({ selector: '[PushNotificationComponent]' })
+declare var webNotification:any;
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -18,7 +18,11 @@ export class AppComponent implements OnInit{
   userBjt: any;
   usersUidsBjt: any;
   timeObservableBjt: any;
+
+  time: any;
+
   admin: Boolean = false;
+  ini: Boolean = false;
   usersUids: FirebaseObjectObservable<any>;
   timeObservable: FirebaseObjectObservable<any>;
   usersOnline: FirebaseListObservable<any>;
@@ -43,13 +47,29 @@ export class AppComponent implements OnInit{
   }
 
   ngOnInit() {
-    var options = {
-        body:  '<h5>Hi</h5>',
-        icon: 'img/sad_head.png',
-    }
+    this.noti('Pomodoro Emkode','Bienvenido');
+  }
 
-    var n = new Notification('Emogotchi says',options);
-    setTimeout(n.close.bind(n), 5000);
+  noti(title:string,body:string){
+    webNotification.showNotification(title, {
+        body: body,
+        icon: 'favicon.ico',
+        onClick: function onNotificationClicked() {
+            console.log('Notification clicked.');
+        },
+        autoClose: 6000 //auto close the notification after 4 seconds (you can manually close it via hide function)
+    }, function onShow(error, hide) {
+        if (error) {
+            window.alert('Unable to show notification: ' + error.message);
+        } else {
+            console.log('Notification Shown.');
+
+            setTimeout(function hideNotification() {
+                console.log('Hiding notification....');
+                hide(); //manually close the notification (you can skip this if you use the autoClose option)
+            }, 5000);
+        }
+    });
   }
 
   login() {
@@ -65,7 +85,22 @@ export class AppComponent implements OnInit{
             }
           }
         });
-        this.timeObservableBjt = this.timeObservable.subscribe(snapshot => {
+        this.timeObservableBjt = this.timeObservable.subscribe((snapshot)=>{
+          let data = snapshot.val();
+          if(data.min == 0 && data.seg == 0){
+            let cad="";
+            if(data.cycle==3){
+              cad+="Ultimo Ciclo:"+(data.cycle+1);
+            }else{
+              cad+="Ciclo:"+(data.cycle+1);
+            }
+            if(data.state==true){
+              cad+=" | Trabajo";
+            }else{
+              cad+=" | Descanso";
+            }
+            this.noti('Pomodoro Emkode',cad);
+          }
           if(!this.admin){
             this.min = snapshot.val().min;
             this.seg = snapshot.val().seg;
@@ -80,7 +115,8 @@ export class AppComponent implements OnInit{
   }
 
   start(){
-    setInterval(()=>{
+    this.ini = true;
+    this.time = setInterval(()=>{
       if(!this.pause){
         this.seg++;
       }
@@ -104,14 +140,28 @@ export class AppComponent implements OnInit{
     },1000);
   }
 
+  stop(){
+    clearInterval(this.time);
+    this.seg = 0;
+    this.min = 0;
+    this.cycle = 0;
+    this.state = true;
+    this.timeObservable.set({ seg: this.seg,min : this.min, cycle : this.cycle, state : this.state});
+    this.ini = false;
+  }
+
   pauseB(){
     this.pause=!this.pause;
   }
 
   logout() {
-    this.userBjt.unsubscribe();
-    this.usersUidsBjt.unsubscribe();
-    this.timeObservableBjt.unsubscribe();
+    if(this.userBjt)
+      this.userBjt.unsubscribe();
+    if(this.usersUidsBjt)
+      this.usersUidsBjt.unsubscribe();
+    if(this.timeObservableBjt)
+      this.timeObservableBjt.unsubscribe();
+    clearInterval(this.time);
     this.seg = 0;
     this.min = 0;
     this.cycle = 0;
